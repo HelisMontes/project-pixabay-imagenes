@@ -1,6 +1,8 @@
 const formulario = document.querySelector('#formulario');
 const resultado = document.querySelector('#resultado');
+const paginacionDiv = document.querySelector('#paginacion');
 const termino = document.querySelector('#termino');
+const REGISTROPORPAGINAS = 30;
 window.onload = () => {
     formulario.addEventListener('submit', validateForm);
 };
@@ -9,8 +11,7 @@ const validateForm = (e) => {
     if (termino.value === '') {
         printMessage('Agregar un termino de busqueda');
         return;
-    }
-    ;
+    };
     searchPicture(termino.value);
 };
 const printMessage = (message) => {
@@ -26,21 +27,23 @@ const printMessage = (message) => {
         setTimeout(() => {
             alert.remove();
         }, 3000);
-    }
-    ;
+    };
 };
 const searchPicture = (termino) => {
     const apiKey = '20695987-7d0bb95dc28f03b09f60006df';
-    const url = `https://pixabay.com/api/?key=${apiKey}&q=${termino}`;
+    const url = `https://pixabay.com/api/?key=${apiKey}&q=${termino}&per_page=${REGISTROPORPAGINAS}`;
     fetch(url)
         .then(respuesta => respuesta.json())
-        .then(result => printPictures(result.hits));
+        .then(result => {
+        const totalPages = quantityPages(result.totalHits);
+        printPictures(result.hits, totalPages);
+    });
 };
-const printPictures = (pictures) => {
+const quantityPages = (total) => Math.ceil(total / REGISTROPORPAGINAS);
+const printPictures = (pictures, pages) => {
     while (resultado.firstChild) {
         resultado.firstChild.remove();
-    }
-    ;
+    };
     pictures.map(imgs => {
         const { likes, views, previewURL, largeImageURL } = imgs;
         resultado.innerHTML += `
@@ -59,4 +62,30 @@ const printPictures = (pictures) => {
         </div>
         `;
     });
+    while (paginacionDiv.firstChild) {
+        paginacionDiv.firstChild.remove();
+    };
+    createPages(pages);
 };
+const createPages = (pages) => {
+    const iterador = generadorPages(pages);
+    while (true) {
+        const { value, done } = iterador.next();
+        if (done) {
+            console.log(done);
+            return;
+        };
+        // Crear botón de sig
+        const btnNext = document.createElement('a');
+        btnNext.href = "#";
+        btnNext.dataset.pagina = value;
+        btnNext.textContent = value;
+        btnNext.classList.add('siguiente', 'mx-auto', 'bg-yellow-400', 'px-4', 'py-1', 'mr-2', 'mx-auto', 'mb-10', 'font-bold', 'uppercase', 'rounded');
+        paginacionDiv.appendChild(btnNext);
+    };
+};
+function* generadorPages(total) {
+    for (let i = 1; i <= total; i++) {
+        yield i;
+    };    ;
+}

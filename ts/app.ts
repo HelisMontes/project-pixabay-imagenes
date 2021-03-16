@@ -1,7 +1,8 @@
 const formulario:any = document.querySelector('#formulario');
 const resultado:any = document.querySelector('#resultado');
+const paginacionDiv = document.querySelector('#paginacion');
 const termino:any = document.querySelector('#termino');
-
+const REGISTROPORPAGINAS:number = 30;
 
 window.onload = () =>{
     formulario.addEventListener('submit', validateForm)
@@ -32,22 +33,34 @@ const printMessage = (message:string):void => {
     };
 };
 
-const searchPicture = (termino:string) => {
+const searchPicture = (termino:string):void => {
     const apiKey:string = '20695987-7d0bb95dc28f03b09f60006df';
-    const url:string = `https://pixabay.com/api/?key=${apiKey}&q=${termino}`;
+    const url:string = `https://pixabay.com/api/?key=${apiKey}&q=${termino}&per_page=${REGISTROPORPAGINAS}`;
     
     fetch(url)
         .then(respuesta => respuesta.json())
-        .then(result => printPictures(result.hits))
-}
+        .then(result => {
+            const totalPages:number = quantityPages(result.totalHits);
+            printPictures(result.hits, totalPages);
+        })
+};
 
-const printPictures = (pictures:any[])=>{
+const quantityPages = ( total:number ) => Math.ceil(total / REGISTROPORPAGINAS);
+
+type img = {
+    likes:number, 
+    views:number,
+    previewURL:string, 
+    largeImageURL:string
+};
+
+const printPictures = (pictures:any[], pages:number) :void => {
     while(resultado.firstChild){
         resultado.firstChild.remove();
     };
 
     pictures.map( imgs => {
-        const {likes, views, previewURL, largeImageURL} = imgs
+        const { likes, views, previewURL, largeImageURL }:img = imgs
         resultado.innerHTML += `
         <div class="w-1/2 md:w-1/3 lg:w-1/4 mb-4 p-3">
             <div class="bg-white ">
@@ -63,5 +76,30 @@ const printPictures = (pictures:any[])=>{
             </div>
         </div>
         `;
-    })
+    });
+    while(paginacionDiv.firstChild){
+        paginacionDiv.firstChild.remove();
+    };
+    createPages(pages);
+};
+
+const createPages = (pages):void => {
+    const iterador:any = generadorPages(pages)
+    while(true){
+        const { value, done }:{value:number, done:boolean} = iterador.next();
+        if(done) return
+        
+        // Crear botón de sig
+        const btnNext:any = document.createElement('a');
+        btnNext.href = "#";
+        btnNext.dataset.pagina = value;
+        btnNext.textContent = value;
+        btnNext.classList.add('siguiente', 'mx-auto', 'bg-yellow-400', 'px-4', 'py-1', 'mr-2', 'mx-auto', 'mb-10', 'font-bold', 'uppercase', 'rounded');
+        paginacionDiv.appendChild(btnNext);
+    }   
+}
+function *generadorPages(total){
+    for (let i = 1; i <= total; i++) {
+        yield i;
+    };
 }
