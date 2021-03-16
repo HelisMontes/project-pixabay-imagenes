@@ -14,7 +14,7 @@ const validateForm = (e:any):void => {
         printMessage('Agregar un termino de busqueda');
         return;
     };
-    searchPicture(termino.value)
+    searchPicture()
 }
 
 const printMessage = (message:string):void => {
@@ -33,9 +33,9 @@ const printMessage = (message:string):void => {
     };
 };
 
-const searchPicture = (termino:string):void => {
+const searchPicture = (pageActual?:number):void => {
     const apiKey:string = '20695987-7d0bb95dc28f03b09f60006df';
-    const url:string = `https://pixabay.com/api/?key=${apiKey}&q=${termino}&per_page=${REGISTROPORPAGINAS}`;
+    const url:string = `https://pixabay.com/api/?key=${apiKey}&q=${termino.value}&per_page=${REGISTROPORPAGINAS}&page=${pageActual}`;
     
     fetch(url)
         .then(respuesta => respuesta.json())
@@ -96,6 +96,10 @@ const createPages = (pages):void => {
         btnNext.textContent = value;
         btnNext.classList.add('siguiente', 'mx-auto', 'bg-yellow-400', 'px-4', 'py-1', 'mr-2', 'mx-auto', 'mb-10', 'font-bold', 'uppercase', 'rounded');
         paginacionDiv.appendChild(btnNext);
+
+        btnNext.onclick = () =>{
+            searchPicture(value);
+        };
     }   
 }
 function *generadorPages(total){
