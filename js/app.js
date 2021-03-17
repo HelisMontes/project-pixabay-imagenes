@@ -12,7 +12,6 @@ const validateForm = (e) => {
         printMessage('Agregar un termino de busqueda');
         return;
     }
-    ;
     searchPicture();
 };
 const printMessage = (message) => {
@@ -30,15 +29,15 @@ const printMessage = (message) => {
         }, 3000);
     };
 };
-const searchPicture = (pageActual) => {
+const searchPicture = async (pageActual) => {
     const apiKey = '20695987-7d0bb95dc28f03b09f60006df';
     const url = `https://pixabay.com/api/?key=${apiKey}&q=${termino.value}&per_page=${REGISTROPORPAGINAS}&page=${pageActual}`;
-    fetch(url)
-        .then(respuesta => respuesta.json())
-        .then(result => {
+    try {
+        const respuesta = await fetch(url);
+        const result = await respuesta.json();
         const totalPages = quantityPages(result.totalHits);
         printPictures(result.hits, totalPages);
-    });
+    } catch (error) { console.log(error); }
 };
 const quantityPages = (total) => Math.ceil(total / REGISTROPORPAGINAS);
 const printPictures = (pictures, pages) => {

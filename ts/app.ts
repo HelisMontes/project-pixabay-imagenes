@@ -33,16 +33,17 @@ const printMessage = (message:string):void => {
     };
 };
 
-const searchPicture = (pageActual?:number):void => {
+const searchPicture = async(pageActual?:number) => {
     const apiKey:string = '20695987-7d0bb95dc28f03b09f60006df';
     const url:string = `https://pixabay.com/api/?key=${apiKey}&q=${termino.value}&per_page=${REGISTROPORPAGINAS}&page=${pageActual}`;
-    
-    fetch(url)
-        .then(respuesta => respuesta.json())
-        .then(result => {
-            const totalPages:number = quantityPages(result.totalHits);
-            printPictures(result.hits, totalPages);
-        })
+    try {
+        const respuesta:any = await fetch(url);
+        const result:any = await respuesta.json();
+        const totalPages:number = quantityPages(result.totalHits);
+        printPictures(result.hits, totalPages);
+        
+    } catch (error) { console.log(error); }
+        
 };
 
 const quantityPages = ( total:number ) => Math.ceil(total / REGISTROPORPAGINAS);
